@@ -196,7 +196,22 @@ func serveGRPC(l net.Listener, wg *sync.WaitGroup) {
 	api.RegisterDgraphServer(s, &edgraph.Server{})
 	err := s.Serve(l)
 	log.Printf("gRpc server stopped : %s", err.Error())
-	s.GracefulStop()
+
+	// Attempt graceful stop (waits for pending RPCs), but force a stop if
+	// it doesn't happen in a reasonable amount of time.
+	done := make(chan struct{})
+	const timeout = 5 * time.Second
+	go func() {
+		s.GracefulStop()
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(timeout):
+		log.Printf("Stopping grpc gracefully is taking longer than %v."+
+			" Force stopping now. Pending RPCs will be abandoned.", timeout)
+		s.Stop()
+	}
 }
 
 func serveHTTP(l net.Listener, wg *sync.WaitGroup) {
