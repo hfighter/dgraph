@@ -20,6 +20,7 @@ function quit {
       ps aux | grep dgraph
       echo "Sleeping for 5 secs so that Dgraph can shutdown."
       sleep 5
+      kill -2 dgraph
     done
   fi
 
