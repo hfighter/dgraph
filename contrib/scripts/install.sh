@@ -8,6 +8,10 @@ set -ex
 go get -d golang.org/x/net/context
 go get -d google.golang.org/grpc
 
+pushd $GOPATH/src/google.golang.org/grpc
+  git checkout 0b24825eb102c06fe252ff8364cc304016597069
+popd
+
 expected="context
 github.com/dgraph-io/dgraph/protos/api
 github.com/dgraph-io/dgraph/y
